@@ -1,0 +1,86 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.7.0/schema.json",
+	"files": {
+		"maxSize": 1048576,
+		"ignore": [],
+		"include": [],
+		"ignoreUnknown": false
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"linter": {
+		"enabled": true,
+		"ignore": [],
+		"include": [],
+		"rules": {
+			"all": true,
+			"nursery": {
+				"useImportRestrictions": "off"
+			},
+			"style": {
+				"useNamingConvention": {
+					"level": "off",
+					"options": {
+						"strictCase": false
+					}
+				}
+			},
+			"correctness": {
+				"noUndeclaredVariables": "off",
+				"useHookAtTopLevel": "off"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"ignore": [],
+		"include": [],
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 80
+	},
+	"organizeImports": {
+		"enabled": true,
+		"ignore": [],
+		"include": []
+	},
+	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": false
+		},
+		"formatter": {
+			"enabled": true,
+			"jsxQuoteStyle": "double",
+			"quoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"trailingComma": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"indentStyle": "tab",
+			"indentWidth": 2,
+			"lineEnding": "lf",
+			"lineWidth": 80,
+			"bracketSpacing": true,
+			"bracketSameLine": false
+		},
+		"globals": ["Bun"]
+	},
+	"json": {
+		"parser": {
+			"allowComments": true,
+			"allowTrailingCommas": true
+		},
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 2,
+			"lineEnding": "lf",
+			"lineWidth": 80
+		}
+	}
+}

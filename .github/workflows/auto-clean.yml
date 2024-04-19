@@ -1,0 +1,19 @@
+name: Auto-Clean
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # Every day at 1:00 AM UTC
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Clean old artifacts
+      uses: c-hive/gha-remove-artifacts@v1
+      with:
+        age: '3 days' # '<number> <unit>', e.g. 5 days, 2 years, 90 seconds, parsed by Moment.js
+        skip-recent: 3 # Skip the most recent <number> artifacts
