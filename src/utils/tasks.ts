@@ -1,10 +1,9 @@
 import { join } from "node:path";
 import { useFileGenerator } from "./file";
 import {
-	getNameFromFilePath,
+	getDataFromPresetPath,
 	useCodeFromFile,
 	useNameAnalyzer,
-	useTagsGenerator,
 } from "./helpers";
 
 export function usePresetConverter(
@@ -12,22 +11,23 @@ export function usePresetConverter(
 	output: string,
 	format: "json",
 ) {
-	// Get only the file name
-	const origName = getNameFromFilePath(file);
+	// Get name from file path
+	const { name, collection, tags } = getDataFromPresetPath(file);
 
 	// Analayze name and get new data
-	const { authors, fileName, newName } = useNameAnalyzer(origName);
+	const { title, authors, fileName } = useNameAnalyzer(name);
 
 	// Get code from file
 	const code = useCodeFromFile(file);
 
-	// Generate tags
-	const tags: string[] = useTagsGenerator(code);
+	// Generate output file path
+	const outputPath = join(output, fileName);
 
 	// Generate the file
-	useFileGenerator(format, join(output, fileName), {
-		name: newName,
+	useFileGenerator(format, outputPath, {
+		title,
 		authors,
+		collection,
 		tags,
 		code,
 	});

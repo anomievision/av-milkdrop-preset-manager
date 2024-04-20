@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { Command } from "commander";
-import { getFiles } from "../utils/helpers";
+import { getPresets } from "../utils/helpers";
 import { usePresetConverter } from "../utils/tasks";
 
 export function addConvert(): Command {
@@ -23,14 +23,16 @@ export function addConvert(): Command {
 				mkdirSync(output);
 			}
 
-			// Get files from input
-			const files = getFiles(input);
+			// Get presets from input
+			const presets = getPresets(input);
 
 			// Convert each file
-			for (const file of files) {
-				console.info(`Converting <${file}> to <${format}>`);
+			for (const preset of presets) {
+				console.info(`Converting <${preset}> to <${format}>`);
 
-				usePresetConverter(file, output, format);
+				usePresetConverter(preset, output, format);
+
+				console.log();
 			}
 		});
 

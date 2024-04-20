@@ -1,9 +1,10 @@
 import { existsSync, writeFileSync } from "node:fs";
 
 export interface PresetData {
-	name: string;
+	title: string;
 	authors: string[];
 	tags: string[];
+	collection: string;
 	code: string;
 }
 
@@ -13,7 +14,7 @@ function generateJsonFile(filePath: string, data: PresetData): void {
 		console.warn(`The file <${filePath}> already exists.`);
 	}
 
-	console.info(`Writing to <${filePath}>`, data);
+	console.info(`Writing to <${filePath}>`, data.authors, data.title, data.tags);
 
 	// Write the file
 	writeFileSync(filePath, JSON.stringify(data, null, 2));
@@ -26,7 +27,7 @@ export function useFileGenerator(
 ): void {
 	switch (format) {
 		case "json": {
-			generateJsonFile(filePath, data);
+			generateJsonFile(`${filePath}.json`, data);
 			break;
 		}
 		default: {

@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { normalizeText } from "normalize-text";
 
 export function checkIfDirOrFile(path: string): "file" | "dir" {
 	// Check if input is a file or directory
@@ -16,7 +17,7 @@ export function checkIfDirOrFile(path: string): "file" | "dir" {
 	throw new Error("Invalid path");
 }
 
-export function getFiles(path: string) {
+export function getPresets(path: string) {
 	const type = checkIfDirOrFile(path);
 
 	switch (type) {
@@ -24,80 +25,124 @@ export function getFiles(path: string) {
 			return [path];
 		}
 		case "dir": {
-			const files = [];
-			const dir = readdirSync(path);
+            let files: string[] = [];
+            const dir = readdirSync(path);
 
-			for (const file of dir) {
-				if (file.endsWith(".milk")) {
-					files.push(join(path, file));
-				}
-			}
+            for (const file of dir) {
+                const filePath = join(path, file);
+                if (file.endsWith(".milk")) {
+                    files.push(filePath);
+                } else {
+                    const nestedFiles = getPresets(filePath);
+                    files = files.concat(nestedFiles);
+                }
+            }
 
-			return files;
-		}
-
+            return files;
+        }
 		default: {
 			throw new Error("Invalid path");
 		}
 	}
 }
 
-export function getNameFromFilePath(filePath: string): string {
-	let fileName: string | undefined;
+export function getDataFromPresetPath(path: string): {
+	name: string,
+	collection: string,
+	tags: string[],
+} {
+	// Remove the .milk extension
+	path = path.replace(".milk", "");
 
-	if (filePath.includes("/")) {
-		fileName = filePath.split("/").pop();
+	// Split the file path into an array of directories and the file name
+	let parts: string[];
+
+	if (path.includes("/")) {
+		parts = path.split("/");
 	} else {
-		fileName = filePath.split("\\").pop();
+		parts = path.split("\\");
 	}
 
-	if (!fileName) {
+	if (!parts) {
 		throw new Error("Invalid file path");
 	}
 
-	// Remove the .milk extension
-	const name = fileName.replace(".milk", "");
+	// Remove the first part (the directory path)
+	parts.shift();
 
-	return name;
+	// // Get every part except the last one and set as collection
+	// const collection = parts.slice(0, -1).join(" ");
+
+	// // Get every part except the first one and last one and set as tags
+	// const tagString = parts.slice(1, -1).join(" ");
+
+	// // Convert tags to an array
+	// const tags = tagString.split(" ");
+
+	// // Get the last part and set as name
+	// const name = parts[parts.length - 1];
+
+	// Get the last part and set as name
+	const name = parts.pop()!;
+
+	// Set the collection as the directory name
+	const collection = parts.shift()!;
+ 
+	// Set the remaining parts as tags
+	const tags = parts;
+
+	console.log("Name: ", name);
+	console.log("Collection: ", collection);
+	console.log("Tags: ", tags);
+
+	return {
+		name,
+		collection,
+		tags,
+	};
 }
 
 export function useNameAnalyzer(name: string): {
+    title: string;
 	authors: string[];
-	fileName: string;
-	newName: string;
+    fileName: string;
 } {
-	let authors: string[] = [];
-	let newName = "";
-	let authorsPart = "";
-	let namePart = "";
+	// Remove '.milk' extension
+    name = name.replace(".milk", "");
 
-	// Separate the authors from the name, by the first - surrounded by whitespace.
-	if (name.includes("-")) {
-		[authorsPart, namePart] = name.split(/(?<=\s)-(?=\s)/);
-		// Separate the authors from the name, by the first _
-	} else if (name.includes("_")) {
-		[authorsPart, namePart] = name.split("_");
-	}
+    let title: string;
+    let authors: string[] = [];
+    let fileName: string;
 
-	// Extract the authors from the authors part using the separators: +&, and remove any whitespace
-	if (authorsPart) {
-		authors = authorsPart.split(/[+&,]/).map((author) => author.trim());
-	}
+    // Remove '.milk' extension
+    title = name.replace(".milk", "");
 
-	// Remove the authors part from the name
-	newName = namePart.trim();
+    // Separate authors from title
+    const separatorIndex = title.indexOf(" - ");
+    if (separatorIndex !== -1) {
+        // console.log("Separator: ' - '");
 
-	// Remove .milk extension
-	newName = newName.replace(".milk", "");
+        const authorsPart = title.substring(0, separatorIndex);
+        title = title.substring(separatorIndex + 3); // +3 to skip the " - "
+        authors = authorsPart.split(/[+&,]/).map(author => author.trim());
+    } else {
+        title = name;
+    }
 
-	// Lowercase the new name
-	// newName = newName.toLowerCase();
+    // Remove all special characters from the title
+    title = normalizeText(title);
 
-	return {
-		authors,
-		fileName: `${newName}.json`,
-		newName,
-	};
+    // Replace all spaces and underscores with hyphens, replace all triple hyphens with single hyphens
+    title = title.replace(/[\s_]+/g, "-").replace(/---/g, "-");
+
+    // Combine the authors and title to create the file name
+    fileName = (authors.join("+") + "_" + title).toLowerCase();
+
+    return {
+        title,
+        authors,
+        fileName,
+    };
 }
 
 export function useCodeFromFile(filePath: string): string {
@@ -110,10 +155,10 @@ export function useCodeFromFile(filePath: string): string {
 	return code;
 }
 
-export function useTagsGenerator(_code: string): string[] {
-	const tags: string[] = [];
+// export function useTagsGenerator(_code: string): string[] {
+// 	const tags: string[] = [];
 
-	// Analayser code
+// 	// Analayser code
 
-	return tags;
-}
+// 	return tags;
+// }
