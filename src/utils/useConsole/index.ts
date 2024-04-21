@@ -1,6 +1,6 @@
 import ora from "ora";
 import type { Ora } from "ora";
-import { parseUsing24BitColors } from "tasai" with { type: "macro" };
+import { parseUsing24BitColors } from "tasai";
 
 export function useSpinner(message: string): Ora {
 	const _message = message ? message : "Loading...";

@@ -1,44 +1,44 @@
 {
-  "name": "av-milkdrop-preset-manager",
-  "version": "1.0.0",
-  "private": true,
-  "description": "A wrapper for ProjectM library WASM binary",
-  "author": {
-    "name": "Blaquewithaq",
-    "email": "anomievision@gmail.com"
-  },
-  "license": "",
-  "bugs": {
-    "url": "https://github.com/anomievision/av-milkdrop-preset-manager/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anomievision/av-milkdrop-preset-manager.git"
-  },
-  "type": "module",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist/**/*"],
-  "scripts": {
-    "clean": "bun ./scripts/clean.ts",
-    "format": "bunx @biomejs/biome format . --write",
-    "lint": "bunx @biomejs/biome lint .",
-    "check": "bunx @biomejs/biome check --apply .",
-    "builder": "bun clean && bun ./scripts/build.ts",
-    "builder:release": "bun clean && bun ./scripts/build.ts --release",
-    "deps:check": "bunx taze major",
-    "deps:update": "bunx taze major -w"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.7.0",
-    "@types/bun": "latest",
-    "bun-plugin-dts": "^0.2.3",
-    "commander": "^12.0.0",
-    "normalize-text": "^2.5.0",
-    "ora": "^8.0.1",
-    "tasai": "^1.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  }
+	"name": "av-milkdrop-preset-manager",
+	"version": "1.0.0",
+	"private": true,
+	"description": "A wrapper for ProjectM library WASM binary",
+	"author": {
+		"name": "Blaquewithaq",
+		"email": "anomievision@gmail.com"
+	},
+	"license": "",
+	"bugs": {
+		"url": "https://github.com/anomievision/av-milkdrop-preset-manager/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/anomievision/av-milkdrop-preset-manager.git"
+	},
+	"type": "module",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": ["dist/**/*"],
+	"scripts": {
+		"clean": "bun ./scripts/clean.ts",
+		"format": "bunx @biomejs/biome format . --write",
+		"lint": "bunx @biomejs/biome lint .",
+		"check": "bunx @biomejs/biome check --apply .",
+		"builder": "bun clean && bun ./scripts/build.ts",
+		"builder:release": "bun clean && bun ./scripts/build.ts --release",
+		"deps:check": "bunx taze major",
+		"deps:update": "bunx taze major -w"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.7.0",
+		"@types/bun": "latest",
+		"bun-plugin-dts": "^0.2.3",
+		"commander": "^12.0.0",
+		"normalize-text": "^2.5.0",
+		"ora": "^8.0.1",
+		"tasai": "^1.0.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
 }
