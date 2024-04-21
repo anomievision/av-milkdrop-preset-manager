@@ -1,8 +1,12 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readdirSync } from "node:fs";
+import { join, sep } from "node:path";
 import { normalizeText } from "normalize-text";
 import { checkIfDirOrFile } from "../../utils/useFilesystem";
-import { type ExportFormat, useFileGenerator } from "./generator";
+import {
+	type ExportFormat,
+	type PresetData,
+	useFileGenerator,
+} from "./generator";
 
 export function getPresets(path: string) {
 	const type = checkIfDirOrFile(path);
@@ -33,7 +37,7 @@ export function getPresets(path: string) {
 	}
 }
 
-export function getDataFromPresetPath(path: string): {
+function getDataFromPresetPath(path: string): {
 	name: string;
 	collection: string;
 	tags: string[];
@@ -73,7 +77,7 @@ export function getDataFromPresetPath(path: string): {
 	};
 }
 
-export function useNameAnalyzer(name: string): {
+function useNameAnalyzer(name: string): {
 	title: string;
 	authors: string[];
 	fileName: string;
@@ -115,17 +119,79 @@ export function useNameAnalyzer(name: string): {
 	};
 }
 
-export function useCodeFromFile(filePath: string): string {
-	// Read the file
-	const file = readFileSync(filePath, "utf-8");
+async function useCodeFromFile(filePath: string): Promise<string> {
+	// If filePath contains json, read the file as json else read as text
+	let text: string;
+
+	if (filePath.endsWith(".json")) {
+		const file = await Bun.file(filePath).json();
+		text = file.code;
+	} else {
+		text = await Bun.file(filePath).text();
+	}
 
 	// Remove everything before [preset00]  (except [preset00])
-	const code = file.substring(file.indexOf("[preset00]"));
+	text = text.substring(text.indexOf("[preset00]"));
 
-	return code;
+	return text;
 }
 
-export function usePresetConverter(
+export interface Tests {
+	doesFileAlreadyExist: boolean;
+	areFileContentsTheSame?: boolean;
+}
+
+async function usePresetTester(
+	format: ExportFormat,
+	output: string,
+	fileName: string,
+	data: PresetData,
+): Promise<Tests> {
+	// Build the output path
+	let _output = output;
+
+	switch (format) {
+		case "json": {
+			_output = `${output}${sep}${fileName}.json`;
+			break;
+		}
+		case "milk": {
+			if (data.collection) {
+				_output = `${_output}${sep}${data.collection}`;
+			}
+
+			_output = `${_output}${sep}${fileName}.milk`;
+			break;
+		}
+		default: {
+			throw new Error("Invalid format");
+		}
+	}
+
+	// Check if the file already exists
+	const doesFileAlreadyExist = existsSync(_output);
+	let areFileContentsTheSame: boolean | undefined = undefined;
+
+	// If the file already exists, check if the contents are the same
+	if (doesFileAlreadyExist) {
+		const existingFile = await useCodeFromFile(_output);
+		const newFile = data.code;
+
+		// Check if the contents are the same
+		if (existingFile.length === newFile.length) {
+			areFileContentsTheSame = true;
+		} else {
+			areFileContentsTheSame = false;
+		}
+	}
+
+	return {
+		doesFileAlreadyExist,
+		areFileContentsTheSame,
+	};
+}
+
+export async function usePresetConverter(
 	file: string,
 	output: string,
 	format: ExportFormat,
@@ -141,18 +207,32 @@ export function usePresetConverter(
 	console.info(`Title: ${title} | Authors: ${authors} | FileName: ${fileName}`);
 
 	// Get code from file
-	const code = useCodeFromFile(file);
+	const code = await useCodeFromFile(file);
 
 	if (code.length > 0) {
 		console.info("Code:", true);
 	}
 
-	// Generate the file
-	useFileGenerator(format, output, fileName, {
+	const tests = await usePresetTester(format, output, fileName, {
 		title,
 		authors,
 		collection,
 		tags,
 		code,
 	});
+
+	// Generate the file
+	useFileGenerator(
+		format,
+		output,
+		fileName,
+		{
+			title,
+			authors,
+			collection,
+			tags,
+			code,
+		},
+		tests,
+	);
 }

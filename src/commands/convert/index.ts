@@ -11,7 +11,11 @@ export function addConvert(): Command {
 		.argument("[output]", "the directory to output the converted presets to")
 		.option("-f, --format <type>", "the format to convert to", "json")
 		.action(
-			(input: string, output: string, { format }: { format: ExportFormat }) => {
+			async (
+				input: string,
+				output: string,
+				{ format }: { format: ExportFormat },
+			) => {
 				// Check if input exists
 				if (!existsSync(input)) {
 					console.error("Preset or directory does not exist");
@@ -31,7 +35,7 @@ export function addConvert(): Command {
 				for (const preset of presets) {
 					console.info(`Converting <${preset}> to <${format}>`);
 
-					usePresetConverter(preset, output, format);
+					await usePresetConverter(preset, output, format);
 
 					console.info();
 				}

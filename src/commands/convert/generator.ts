@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { sep } from "node:path";
+import type { Tests } from "./funcs";
 
 export interface PresetData {
 	title: string;
@@ -55,15 +56,37 @@ export function useFileGenerator(
 	output: string,
 	fileName: string,
 	data: PresetData,
+	tests: Tests,
 ): void {
+	let _output = output;
+
+	// Modify the output path based on the tests
+	if (tests.doesFileAlreadyExist && tests.areFileContentsTheSame) {
+		console.info(
+			"File already exists and the contents are the same. Skipping...",
+		);
+		return;
+	}
+
+	if (tests.doesFileAlreadyExist && !tests.areFileContentsTheSame) {
+		console.info(
+			"File already exists but the contents are different. Moving to review...",
+		);
+		_output = `${_output}${sep}review`;
+
+		if (!existsSync(_output)) {
+			mkdirSync(_output);
+		}
+	}
+
 	// Generate the file based on the format
 	switch (format) {
 		case "json": {
-			generateJsonFile(output, fileName, data);
+			generateJsonFile(_output, fileName, data);
 			break;
 		}
 		case "milk": {
-			generateMilkdropFile(output, fileName, data);
+			generateMilkdropFile(_output, fileName, data);
 			break;
 		}
 		default: {
