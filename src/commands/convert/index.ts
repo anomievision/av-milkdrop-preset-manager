@@ -1,5 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { Command } from "commander";
+import { consoleHeader, consoleTitle } from "../../utils/useConsole";
+import { initLogging } from "../../utils/useConsole/logging";
 import { getPresets, usePresetConverter } from "./funcs";
 import type { ExportFormat } from "./generator";
 
@@ -24,16 +26,19 @@ export function addConvert(): Command {
 
 				// Check if output exists
 				if (!existsSync(output)) {
-					console.info(`Creating output directory at <${output}>`);
 					mkdirSync(output);
 				}
+
+				initLogging(output);
+
+				consoleTitle(input, output);
 
 				// Get presets from input
 				const presets = getPresets(input);
 
 				// Convert each file
 				for (const preset of presets) {
-					console.info(`Converting <${preset}> to <${format}>`);
+					consoleHeader(preset, format);
 
 					await usePresetConverter(preset, output, format);
 

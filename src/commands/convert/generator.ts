@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { sep } from "node:path";
+import { consoleStatus } from "../../utils/useConsole";
 import type { Tests } from "./funcs";
 
 export interface PresetData {
@@ -62,15 +63,15 @@ export function useFileGenerator(
 
 	// Modify the output path based on the tests
 	if (tests.doesFileAlreadyExist && tests.areFileContentsTheSame) {
-		console.info(
+		consoleStatus(
 			"File already exists and the contents are the same. Skipping...",
 		);
 		return;
 	}
 
 	if (tests.doesFileAlreadyExist && !tests.areFileContentsTheSame) {
-		console.info(
-			"File already exists but the contents are different. Moving to review...",
+		consoleStatus(
+			"File already exists but the contents are different. Overwriting...",
 		);
 		_output = `${_output}${sep}review`;
 

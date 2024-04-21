@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, sep } from "node:path";
 import { normalizeText } from "normalize-text";
+import { consoleEntry } from "../../utils/useConsole";
 import { checkIfDirOrFile } from "../../utils/useFilesystem";
 import {
 	type ExportFormat,
@@ -199,20 +200,21 @@ export async function usePresetConverter(
 	// Get name from file path
 	const { name, collection, tags } = getDataFromPresetPath(file);
 
-	console.info(`Name: ${name} | Collection: ${collection} | Tags: ${tags}`);
-
 	// Analayze name and get new data
 	const { title, authors, fileName } = useNameAnalyzer(name);
-
-	console.info(`Title: ${title} | Authors: ${authors} | FileName: ${fileName}`);
 
 	// Get code from file
 	const code = await useCodeFromFile(file);
 
-	if (code.length > 0) {
-		console.info("Code:", true);
-	}
+	consoleEntry(
+		title,
+		authors.join(", "),
+		collection,
+		tags.join(", "),
+		code.length > 0,
+	);
 
+	// Test the preset
 	const tests = await usePresetTester(format, output, fileName, {
 		title,
 		authors,

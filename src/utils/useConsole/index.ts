@@ -1,20 +1,61 @@
-import ora from "ora";
-import type { Ora } from "ora";
-import { parseUsing24BitColors } from "tasai";
+import { version } from "../../../package.json";
+import type { ExportFormat } from "../../commands/convert/generator";
+import { writeToFile } from "./logging";
 
-export function useSpinner(message: string): Ora {
-	const _message = message ? message : "Loading...";
-	const _styled = parseUsing24BitColors(`<#D95F80>${_message}<r>`);
+export const consoleTitle = (input: string, output: string) => {
+	const title = `AnomieVision | Milkdrop Preset Manager | Version: ${version}`;
 
-	const _spinner = ora({
-		text: _styled,
-		prefixText: undefined,
-		suffixText: undefined,
-		spinner: "dots",
-		color: "cyan",
-		hideCursor: true,
-		indent: 0,
-	});
+	console.info(title);
+	writeToFile(title);
 
-	return _spinner;
-}
+	const subtitle = `\nInput: ${input} | Output: ${output}`;
+	console.info(subtitle);
+	writeToFile(subtitle);
+};
+
+export const consoleHeader = (preset: string, format: ExportFormat) => {
+	const _preset = `\nPreset: ${preset}`;
+	const _format = `Format: ${format}`;
+
+	console.info(_preset);
+	writeToFile(_preset);
+
+	console.info(_format);
+	writeToFile(_format);
+};
+
+export const consoleEntry = (
+	title: string,
+	authors: string,
+	collection: string,
+	tags: string,
+	code: boolean,
+) => {
+	const _title = `Title: ${title}`;
+	const _authors = `Authors: ${authors}`;
+	const _collection = `Collection: ${collection}`;
+	const _tags = `Tags: ${tags}`;
+	const _code = `Code: ${code}`;
+
+	console.info(_title);
+	writeToFile(_title);
+
+	console.info(_authors);
+	writeToFile(_authors);
+
+	console.info(_collection);
+	writeToFile(_collection);
+
+	console.info(_tags);
+	writeToFile(_tags);
+
+	console.info(_code);
+	writeToFile(_code);
+};
+
+export const consoleStatus = (message: string) => {
+	const _message = `Status: ${message}`;
+
+	console.info(_message);
+	writeToFile(_message);
+};
