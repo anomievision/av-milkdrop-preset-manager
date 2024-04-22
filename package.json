@@ -15,17 +15,13 @@
 		"type": "git",
 		"url": "https://github.com/anomievision/av-milkdrop-preset-manager.git"
 	},
-	"type": "module",
-	"module": "dist/index.js",
-	"types": "dist/index.d.ts",
 	"files": ["dist/**/*"],
 	"scripts": {
 		"clean": "bun ./scripts/clean.ts",
 		"format": "bunx @biomejs/biome format . --write",
 		"lint": "bunx @biomejs/biome lint .",
 		"check": "bunx @biomejs/biome check --apply .",
-		"builder": "bun clean && bun ./scripts/build.ts",
-		"builder:release": "bun clean && bun ./scripts/build.ts --release",
+		"builder": "bun clean && bun build ./src/index.ts --outfile ./dist/av-mpm --target bun --minify --compile",
 		"deps:check": "bunx taze major",
 		"deps:update": "bunx taze major -w"
 	},

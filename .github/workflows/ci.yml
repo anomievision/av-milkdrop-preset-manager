@@ -1,14 +1,14 @@
 name: CI
 
 on:
-  # push:
-  #   branches: 
-  #     - "*"
-  #   tags:
-  #     - "*"
-  # pull_request:
-  #   branches: 
-  #     - "*"
+  push:
+    branches: 
+      - "*"
+    tags:
+      - "*"
+  pull_request:
+    branches: 
+      - "*"
   workflow_dispatch:
 
 jobs:
@@ -28,5 +28,22 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: 'latest'
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Check with Biome
+        run: bun check
+
+      - name: Build
+        run: |
+          bun builder
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'av-mpm-${{ github.sha }}-${{ matrix.os }}'
+          path: 'dist/*'
+        continue-on-error: true
 
 
