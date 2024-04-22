@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join, sep } from "node:path";
 import { normalizeText } from "normalize-text";
 import { consoleEntry } from "../../utils/useConsole";
@@ -95,11 +95,20 @@ function useNameAnalyzer(name: string): {
 	// Separate authors from title
 	const separatorIndex = title.indexOf(" - ");
 	if (separatorIndex !== -1) {
-		// console.log("Separator: ' - '");
-
 		const authorsPart = title.substring(0, separatorIndex);
 		title = title.substring(separatorIndex + 3); // +3 to skip the " - "
 		authors = authorsPart.split(/[+&,]/).map((author) => author.trim());
+
+		// Remove 'vs, 'and', ' n ' from authors
+		authors = authors.map((author) =>
+			author.replace(/( vs | and | n )\.?/gi, "").trim(),
+		);
+
+		// Swap spaces and underscores with - in authors
+		authors = authors.map((author) => author.replace(/[\s_]+/g, "-"));
+
+		// Remove all '.' and '=' from authors
+		authors = authors.map((author) => author.replace(/[.=]+/g, ""));
 	} else {
 		title = _name;
 	}
@@ -139,12 +148,13 @@ async function useCodeFromFile(filePath: string): Promise<string> {
 
 export interface Tests {
 	doesFileAlreadyExist: boolean;
-	areFileContentsTheSame?: boolean;
+	doesExistingFileContentsMatchNewContents?: boolean;
+	hasAuthors: boolean;
 }
 
 async function usePresetTester(
-	format: ExportFormat,
 	output: string,
+	format: ExportFormat,
 	fileName: string,
 	data: PresetData,
 ): Promise<Tests> {
@@ -171,7 +181,8 @@ async function usePresetTester(
 
 	// Check if the file already exists
 	const doesFileAlreadyExist = existsSync(_output);
-	let areFileContentsTheSame: boolean | undefined = undefined;
+	let doesExistingFileContentsMatchNewContents: boolean | undefined = undefined;
+	const hasAuthors = data.authors.length > 0;
 
 	// If the file already exists, check if the contents are the same
 	if (doesFileAlreadyExist) {
@@ -180,23 +191,31 @@ async function usePresetTester(
 
 		// Check if the contents are the same
 		if (existingFile.length === newFile.length) {
-			areFileContentsTheSame = true;
+			doesExistingFileContentsMatchNewContents = true;
 		} else {
-			areFileContentsTheSame = false;
+			doesExistingFileContentsMatchNewContents = false;
 		}
 	}
 
 	return {
 		doesFileAlreadyExist,
-		areFileContentsTheSame,
+		doesExistingFileContentsMatchNewContents,
+		hasAuthors,
 	};
 }
 
 export async function usePresetConverter(
-	file: string,
 	output: string,
 	format: ExportFormat,
-) {
+	file: string,
+): Promise<void> {
+	const _output = `${output}${sep}presets`;
+
+	// Make the presets directory if it doesn't exist
+	if (!existsSync(_output)) {
+		mkdirSync(_output);
+	}
+
 	// Get name from file path
 	const { name, collection, tags } = getDataFromPresetPath(file);
 
@@ -215,7 +234,7 @@ export async function usePresetConverter(
 	);
 
 	// Test the preset
-	const tests = await usePresetTester(format, output, fileName, {
+	const tests = await usePresetTester(_output, format, fileName, {
 		title,
 		authors,
 		collection,
@@ -226,7 +245,7 @@ export async function usePresetConverter(
 	// Generate the file
 	useFileGenerator(
 		format,
-		output,
+		_output,
 		fileName,
 		{
 			title,

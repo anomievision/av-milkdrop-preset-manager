@@ -1,16 +1,20 @@
 import { version } from "../../../package.json";
 import type { ExportFormat } from "../../commands/convert/generator";
-import { writeToFile } from "./logging";
+import {
+	writeToDuplicateFile,
+	writeToPrimaryFile,
+	writeToReviewFile,
+} from "./logging";
 
 export const consoleTitle = (input: string, output: string) => {
 	const title = `AnomieVision | Milkdrop Preset Manager | Version: ${version}`;
 
 	console.info(title);
-	writeToFile(title);
+	writeToPrimaryFile(title);
 
 	const subtitle = `\nInput: ${input} | Output: ${output}`;
 	console.info(subtitle);
-	writeToFile(subtitle);
+	writeToPrimaryFile(subtitle);
 };
 
 export const consoleHeader = (preset: string, format: ExportFormat) => {
@@ -18,10 +22,10 @@ export const consoleHeader = (preset: string, format: ExportFormat) => {
 	const _format = `Format: ${format}`;
 
 	console.info(_preset);
-	writeToFile(_preset);
+	writeToPrimaryFile(_preset);
 
 	console.info(_format);
-	writeToFile(_format);
+	writeToPrimaryFile(_format);
 };
 
 export const consoleEntry = (
@@ -38,24 +42,36 @@ export const consoleEntry = (
 	const _code = `Code: ${code}`;
 
 	console.info(_title);
-	writeToFile(_title);
+	writeToPrimaryFile(_title);
 
 	console.info(_authors);
-	writeToFile(_authors);
+	writeToPrimaryFile(_authors);
 
 	console.info(_collection);
-	writeToFile(_collection);
+	writeToPrimaryFile(_collection);
 
 	console.info(_tags);
-	writeToFile(_tags);
+	writeToPrimaryFile(_tags);
 
 	console.info(_code);
-	writeToFile(_code);
+	writeToPrimaryFile(_code);
 };
 
 export const consoleStatus = (message: string) => {
 	const _message = `Status: ${message}`;
 
 	console.info(_message);
-	writeToFile(_message);
+	writeToPrimaryFile(_message);
+};
+
+export const reportDuplicate = (message: string) => {
+	const _message = `Duplicate: ${message}`;
+
+	writeToDuplicateFile(_message);
+};
+
+export const reportReview = (message: string) => {
+	const _message = `Review: ${message}`;
+
+	writeToReviewFile(_message);
 };

@@ -40,7 +40,7 @@ export function addConvert(): Command {
 				for (const preset of presets) {
 					consoleHeader(preset, format);
 
-					await usePresetConverter(preset, output, format);
+					await usePresetConverter(output, format, preset);
 
 					console.info();
 				}

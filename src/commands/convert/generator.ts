@@ -1,6 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { sep } from "node:path";
-import { consoleStatus } from "../../utils/useConsole";
+import {
+	consoleStatus,
+	reportDuplicate,
+	reportReview,
+} from "../../utils/useConsole";
 import type { Tests } from "./funcs";
 
 export interface PresetData {
@@ -17,7 +21,7 @@ function generateJsonFile(
 	output: string,
 	fileName: string,
 	data: PresetData,
-): void {
+): boolean {
 	// Add the .json extension
 	const _output = `${output}${sep}${fileName}.json`;
 
@@ -25,13 +29,20 @@ function generateJsonFile(
 
 	// Write the file
 	writeFileSync(_output, JSON.stringify(data, null, 2));
+
+	// Check if the file was created
+	if (!existsSync(_output)) {
+		return false;
+	}
+
+	return true;
 }
 
 function generateMilkdropFile(
 	output: string,
 	fileName: string,
 	data: PresetData,
-): void {
+): boolean {
 	let _output = output;
 
 	// Add the collection to the output path if it exists
@@ -50,6 +61,13 @@ function generateMilkdropFile(
 
 	// Write the file
 	writeFileSync(_output, data.code);
+
+	// Check if the file was created
+	if (!existsSync(_output)) {
+		return false;
+	}
+
+	return true;
 }
 
 export function useFileGenerator(
@@ -58,40 +76,69 @@ export function useFileGenerator(
 	fileName: string,
 	data: PresetData,
 	tests: Tests,
-): void {
-	let _output = output;
+): boolean {
+	let _output = `${output}`;
 
 	// Modify the output path based on the tests
-	if (tests.doesFileAlreadyExist && tests.areFileContentsTheSame) {
+	if (
+		tests.doesFileAlreadyExist &&
+		tests.doesExistingFileContentsMatchNewContents
+	) {
 		consoleStatus(
 			"File already exists and the contents are the same. Skipping...",
 		);
-		return;
+
+		reportDuplicate(`${_output}${sep}${fileName}`);
+		return false;
 	}
 
-	if (tests.doesFileAlreadyExist && !tests.areFileContentsTheSame) {
+	if (
+		tests.doesFileAlreadyExist &&
+		!tests.doesExistingFileContentsMatchNewContents
+	) {
 		consoleStatus(
-			"File already exists but the contents are different. Overwriting...",
+			"File already exists but the contents are different. Moving for review...",
 		);
+
+		reportReview(`${_output}${sep}${fileName} - different contents`);
+
 		_output = `${_output}${sep}review`;
 
+		// Make the review directory if it doesn't exist
 		if (!existsSync(_output)) {
 			mkdirSync(_output);
 		}
 	}
 
+	if (!tests.hasAuthors) {
+		consoleStatus("No authors found. Moving for review...");
+
+		reportReview(`${_output}${sep}${fileName} - no authors`);
+
+		_output = `${_output}${sep}review`;
+
+		// Make the review directory if it doesn't exist
+		if (!existsSync(_output)) {
+			mkdirSync(_output);
+		}
+	}
+
+	let success = false;
+
 	// Generate the file based on the format
 	switch (format) {
 		case "json": {
-			generateJsonFile(_output, fileName, data);
+			success = generateJsonFile(_output, fileName, data);
 			break;
 		}
 		case "milk": {
-			generateMilkdropFile(_output, fileName, data);
+			success = generateMilkdropFile(_output, fileName, data);
 			break;
 		}
 		default: {
 			throw new Error(`Unsupported format: ${format}`);
 		}
 	}
+
+	return success;
 }
