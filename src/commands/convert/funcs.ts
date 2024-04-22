@@ -1,42 +1,18 @@
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { join, sep } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
+import { sep } from "node:path";
 import { normalizeText } from "normalize-text";
-import { consoleEntry } from "../../utils/useConsole";
-import { checkIfDirOrFile } from "../../utils/useFilesystem";
+import {
+	consoleEntry,
+	consoleStatus,
+	reportDuplicate,
+	reportReview,
+} from "../../utils/useConsole";
+import { useCodeFromFile } from "../../utils/useFilesystem";
 import {
 	type ExportFormat,
 	type PresetData,
 	useFileGenerator,
-} from "./generator";
-
-export function getPresets(path: string) {
-	const type = checkIfDirOrFile(path);
-
-	switch (type) {
-		case "file": {
-			return [path];
-		}
-		case "dir": {
-			let files: string[] = [];
-			const dir = readdirSync(path);
-
-			for (const file of dir) {
-				const filePath = join(path, file);
-				if (file.endsWith(".milk")) {
-					files.push(filePath);
-				} else {
-					const nestedFiles = getPresets(filePath);
-					files = files.concat(nestedFiles);
-				}
-			}
-
-			return files;
-		}
-		default: {
-			throw new Error("Invalid path");
-		}
-	}
-}
+} from "../../utils/useGenerator";
 
 function getDataFromPresetPath(path: string): {
 	name: string;
@@ -129,23 +105,6 @@ function useNameAnalyzer(name: string): {
 	};
 }
 
-async function useCodeFromFile(filePath: string): Promise<string> {
-	// If filePath contains json, read the file as json else read as text
-	let text: string;
-
-	if (filePath.endsWith(".json")) {
-		const file = await Bun.file(filePath).json();
-		text = file.code;
-	} else {
-		text = await Bun.file(filePath).text();
-	}
-
-	// Remove everything before [preset00]  (except [preset00])
-	text = text.substring(text.indexOf("[preset00]"));
-
-	return text;
-}
-
 export interface Tests {
 	doesFileAlreadyExist: boolean;
 	doesExistingFileContentsMatchNewContents?: boolean;
@@ -209,7 +168,7 @@ export async function usePresetConverter(
 	format: ExportFormat,
 	file: string,
 ): Promise<void> {
-	const _output = `${output}${sep}presets`;
+	let _output = `${output}${sep}presets`;
 
 	// Make the presets directory if it doesn't exist
 	if (!existsSync(_output)) {
@@ -242,18 +201,55 @@ export async function usePresetConverter(
 		code,
 	});
 
+	// Modify the output path based on the tests
+	if (
+		tests.doesFileAlreadyExist &&
+		tests.doesExistingFileContentsMatchNewContents
+	) {
+		consoleStatus(
+			"File already exists and the contents are the same. Skipping...",
+		);
+
+		reportDuplicate(`${_output}${sep}${fileName}`);
+	}
+
+	if (
+		tests.doesFileAlreadyExist &&
+		!tests.doesExistingFileContentsMatchNewContents
+	) {
+		consoleStatus(
+			"File already exists but the contents are different. Moving for review...",
+		);
+
+		reportReview(`${_output}${sep}${fileName} - different contents`);
+
+		_output = `${_output}${sep}review`;
+
+		// Make the review directory if it doesn't exist
+		if (!existsSync(_output)) {
+			mkdirSync(_output);
+		}
+	}
+
+	if (!tests.hasAuthors) {
+		consoleStatus("No authors found. Moving for review...");
+
+		reportReview(`${_output}${sep}${fileName} - no authors`);
+
+		_output = `${_output}${sep}review`;
+
+		// Make the review directory if it doesn't exist
+		if (!existsSync(_output)) {
+			mkdirSync(_output);
+		}
+	}
+
 	// Generate the file
-	useFileGenerator(
-		format,
-		_output,
-		fileName,
-		{
-			title,
-			authors,
-			collection,
-			tags,
-			code,
-		},
-		tests,
-	);
+	useFileGenerator(format, _output, fileName, {
+		title,
+		authors,
+		collection,
+		tags,
+		code,
+	});
 }

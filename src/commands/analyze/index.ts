@@ -1,15 +1,20 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { Command } from "commander";
-import { consoleHeader, consoleTitle } from "../../utils/useConsole";
+import {
+	consoleHeader,
+	consoleMessage,
+	consoleStatus,
+	consoleTitle,
+} from "../../utils/useConsole";
 import { initLogging } from "../../utils/useConsole/logging";
 import { getPresets } from "../../utils/useFilesystem";
 import type { ExportFormat } from "../../utils/useGenerator";
-import { usePresetConverter } from "./funcs";
+import { findDuplicatePresets } from "./funcs";
 
-export function addConvert(): Command {
+export function addAnalyze(): Command {
 	const command = new Command()
-		.command("convert")
-		.description("convert presets to a different format")
+		.command("analyze")
+		.description("analyze presets for issues")
 		.argument("<input>", "the preset or directory of presets to convert")
 		.argument("[output]", "the directory to output the converted presets to")
 		.option("-f, --format <type>", "the format to convert to", "json")
@@ -37,14 +42,19 @@ export function addConvert(): Command {
 				// Get presets from input
 				const presets = getPresets(input);
 
-				// Convert each file
+				consoleMessage("\nAnalyzing presets...");
+
+				// Analyze and compare each file against all other files in the directory
 				for (const preset of presets) {
-					consoleHeader(preset, format);
+					const result = await findDuplicatePresets(preset, presets);
 
-					await usePresetConverter(output, format, preset);
-
-					console.info();
+					if (result.length > 0) {
+						consoleHeader(preset, format);
+						consoleStatus(`Duplicates found: ${result}`);
+					}
 				}
+
+				consoleMessage("\nAnalysis complete");
 			},
 		);
 

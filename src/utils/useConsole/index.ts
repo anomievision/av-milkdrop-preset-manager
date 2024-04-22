@@ -1,5 +1,5 @@
 import { version } from "../../../package.json";
-import type { ExportFormat } from "../../commands/convert/generator";
+import type { ExportFormat } from "../useGenerator";
 import {
 	writeToDuplicateFile,
 	writeToPrimaryFile,
@@ -62,6 +62,11 @@ export const consoleStatus = (message: string) => {
 
 	console.info(_message);
 	writeToPrimaryFile(_message);
+};
+
+export const consoleMessage = (message: string) => {
+	console.info(message);
+	writeToPrimaryFile(message);
 };
 
 export const reportDuplicate = (message: string) => {

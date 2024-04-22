@@ -1,12 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { sep } from "node:path";
-import {
-	consoleStatus,
-	reportDuplicate,
-	reportReview,
-} from "../../utils/useConsole";
-import type { Tests } from "./funcs";
-
 export interface PresetData {
 	title: string;
 	authors: string[];
@@ -75,70 +68,17 @@ export function useFileGenerator(
 	output: string,
 	fileName: string,
 	data: PresetData,
-	tests: Tests,
 ): boolean {
-	let _output = `${output}`;
-
-	// Modify the output path based on the tests
-	if (
-		tests.doesFileAlreadyExist &&
-		tests.doesExistingFileContentsMatchNewContents
-	) {
-		consoleStatus(
-			"File already exists and the contents are the same. Skipping...",
-		);
-
-		reportDuplicate(`${_output}${sep}${fileName}`);
-		return false;
-	}
-
-	if (
-		tests.doesFileAlreadyExist &&
-		!tests.doesExistingFileContentsMatchNewContents
-	) {
-		consoleStatus(
-			"File already exists but the contents are different. Moving for review...",
-		);
-
-		reportReview(`${_output}${sep}${fileName} - different contents`);
-
-		_output = `${_output}${sep}review`;
-
-		// Make the review directory if it doesn't exist
-		if (!existsSync(_output)) {
-			mkdirSync(_output);
-		}
-	}
-
-	if (!tests.hasAuthors) {
-		consoleStatus("No authors found. Moving for review...");
-
-		reportReview(`${_output}${sep}${fileName} - no authors`);
-
-		_output = `${_output}${sep}review`;
-
-		// Make the review directory if it doesn't exist
-		if (!existsSync(_output)) {
-			mkdirSync(_output);
-		}
-	}
-
-	let success = false;
-
 	// Generate the file based on the format
 	switch (format) {
 		case "json": {
-			success = generateJsonFile(_output, fileName, data);
-			break;
+			return generateJsonFile(output, fileName, data);
 		}
 		case "milk": {
-			success = generateMilkdropFile(_output, fileName, data);
-			break;
+			return generateMilkdropFile(output, fileName, data);
 		}
 		default: {
 			throw new Error(`Unsupported format: ${format}`);
 		}
 	}
-
-	return success;
 }
