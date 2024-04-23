@@ -23,13 +23,16 @@
 		"check": "bunx @biomejs/biome check --apply .",
 		"builder": "bun clean && bun build ./src/index.ts --outfile ./dist/av-mpm --target bun --minify --compile",
 		"deps:check": "bunx taze major",
-		"deps:update": "bunx taze major -w"
+		"deps:update": "bunx taze major -w",
+		"prepare:lefthook": "lefthook install && bun -e \"const fs=require('node:fs'); fs.writeFileSync('node_modules/lefthook/bin/index.js', fs.readFileSync('node_modules/lefthook/bin/index.js', 'utf8').replace(/^#!\\/usr\\/bin\\/env\\s+node/gm, '#!/usr/bin/env bun'))\"",
+		"postinstall": "bun prepare:lefthook"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.7.0",
 		"@types/bun": "latest",
 		"bun-plugin-dts": "^0.2.3",
 		"commander": "^12.0.0",
+		"lefthook": "^1.6.10",
 		"normalize-text": "^2.5.0",
 		"tasai": "^1.0.0"
 	},
