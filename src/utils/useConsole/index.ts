@@ -1,82 +1,47 @@
 import { version } from "../../../package.json";
-import type { ExportFormat } from "../useGenerator";
-import {
-	writeToDuplicateFile,
-	writeToPrimaryFile,
-	writeToReviewFile,
-} from "./logging";
 
-export const consoleTitle = (input: string, output: string) => {
-	const title = `AnomieVision | Milkdrop Preset Manager | Version: ${version}`;
+export const consoleTitle = (text?: string) => {
+	let title = `\nAnomieVision | Milkdrop Preset Manager | Version: ${version}`;
 
-	console.info(title);
-	writeToPrimaryFile(title);
+	if (text) {
+		title = `${title}\n\n${text}`;
+	}
 
-	const subtitle = `\nInput: ${input} | Output: ${output}`;
-	console.info(subtitle);
-	writeToPrimaryFile(subtitle);
+	console.info(`${title}\n`);
 };
 
-export const consoleHeader = (preset: string, format: ExportFormat) => {
-	const _preset = `\nPreset: ${preset}`;
-	const _format = `Format: ${format}`;
+export const consoleHeader = (text: string) => {
+	const header = `> ${text}`;
 
-	console.info(_preset);
-	writeToPrimaryFile(_preset);
-
-	console.info(_format);
-	writeToPrimaryFile(_format);
+	console.info(header);
 };
 
-export const consoleEntry = (
-	title: string,
-	authors: string,
-	collection: string,
-	tags: string,
-	code: boolean,
-) => {
-	const _title = `Title: ${title}`;
-	const _authors = `Authors: ${authors}`;
-	const _collection = `Collection: ${collection}`;
-	const _tags = `Tags: ${tags}`;
-	const _code = `Code: ${code}`;
+export const consoleItem = (text: string) => {
+	const item = `   - ${text}`;
 
-	console.info(_title);
-	writeToPrimaryFile(_title);
-
-	console.info(_authors);
-	writeToPrimaryFile(_authors);
-
-	console.info(_collection);
-	writeToPrimaryFile(_collection);
-
-	console.info(_tags);
-	writeToPrimaryFile(_tags);
-
-	console.info(_code);
-	writeToPrimaryFile(_code);
+	console.info(item);
 };
 
-export const consoleStatus = (message: string) => {
-	const _message = `Status: ${message}`;
+export const consoleMessage = (text: string) => {
+	const message = `${text}`;
 
-	console.info(_message);
-	writeToPrimaryFile(_message);
-};
-
-export const consoleMessage = (message: string) => {
 	console.info(message);
-	writeToPrimaryFile(message);
 };
 
-export const reportDuplicate = (message: string) => {
-	const _message = `Duplicate: ${message}`;
+export const consoleList = (listItems: string[]) => {
+	const list = listItems.map((item) => `   - ${item}`).join("\n");
 
-	writeToDuplicateFile(_message);
+	console.info(list);
 };
 
-export const reportReview = (message: string) => {
-	const _message = `Review: ${message}`;
+export const consoleError = (text: string) => {
+	const error = `Error: ${text}`;
 
-	writeToReviewFile(_message);
+	console.error(error);
+};
+
+export const consoleWarning = (text: string) => {
+	const warning = `Warning: ${text}`;
+
+	console.warn(warning);
 };

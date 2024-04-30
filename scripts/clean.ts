@@ -2,7 +2,7 @@ import { existsSync, rmSync } from "node:fs";
 
 console.info("Cleaning up...");
 
-const paths = ["dist"];
+const paths = ["dist", "output"];
 
 for (const path of paths) {
 	if (existsSync(path)) {

@@ -39,6 +39,13 @@ jobs:
         run: |
           bun builder
 
+      - name: Test
+        run: |
+          bun test download --coverage
+          bun test extract --coverage
+          bun test analyze --coverage
+          bun test normalize --coverage
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:

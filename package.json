@@ -27,14 +27,18 @@
 		"prepare:lefthook": "lefthook install && bun -e \"const fs=require('node:fs'); fs.writeFileSync('node_modules/lefthook/bin/index.js', fs.readFileSync('node_modules/lefthook/bin/index.js', 'utf8').replace(/^#!\\/usr\\/bin\\/env\\s+node/gm, '#!/usr/bin/env bun'))\"",
 		"postinstall": "bun prepare:lefthook"
 	},
+	"dependencies": {
+		"commander": "^12.0.0",
+		"nodegit": "^0.27.0",
+		"normalize-text": "^2.5.0",
+		"ora": "^8.0.1",
+		"tasai": "^1.0.0"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.7.0",
 		"@types/bun": "latest",
 		"bun-plugin-dts": "^0.2.3",
-		"commander": "^12.0.0",
-		"lefthook": "^1.6.10",
-		"normalize-text": "^2.5.0",
-		"tasai": "^1.0.0"
+		"lefthook": "^1.6.10"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
